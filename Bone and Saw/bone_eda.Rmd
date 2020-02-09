@@ -11,6 +11,8 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
+##KK: If this is meant to be sent to the client later on, please put appropriate headings like the title and names. 
+
 
 ###read the raw data
 # ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
@@ -20,10 +22,20 @@ pacman::p_load(readxl,vioplot,ggplot2,tidyverse,stringr)
 ###data wrangling
 # ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
 mydata <- read_excel("Saw Data Collection.xlsx",sheet = 2,col_names = TRUE,skip = 1)
-mydata <- mydata[-13]
-mydata <- mydata[-13]
+#there are two empty columns at the end of the data set, so we get rid of it
+mydata <- mydata[,-c(13,14)]
+mydata 
 
+#KK: why did you create an extra variable?
 mydata <- dplyr::mutate(mydata,Saw = substr(`Saw ID`, 1,1))
+
+#KK: I would suggest combining the data from the first sheet to make your lives easier, such as
+sawInfo<-read_excel("Saw Data Collection.xlsx", sheet = 1, col_names = TRUE, skip = 1, n_max = 17)
+#get rid of the last columns
+sawInfo<-sawInfo[,-c((ncol(sawInfo) - 4):ncol(sawInfo))]
+handSaws<-sawInfo$`Saw ID`[sawInfo$Power == "hand"]
+subdata<-filter(mydata, Saw %in% handSaws)
+
 #filter with hand saw
 subdata <- filter(mydata,str_detect(Saw, "A|B|C|D|E|F|G|J|K|L|M"))
 
@@ -31,6 +43,7 @@ subdata <- filter(mydata,str_detect(Saw, "A|B|C|D|E|F|G|J|K|L|M"))
 ###EDA
 # ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
 #Unrestrained vs restrained (hand)
+#KK: I would suggest naming the data something more meaningful, like restrainedDat or something so you won't get confused later on
 datasplit <- split(mydata,mydata$`Restrained/Unrestrained`)
 x1 <- datasplit[[1]]
 x2 <- datasplit[[2]]
@@ -42,6 +55,7 @@ p1 <- ggplot(subdata,aes(x = subdata$`Restrained/Unrestrained`,y = Minimum)) +ge
   theme(text = element_text(face = "bold",color = "steelblue"))+
   scale_color_discrete(name = "Hand Saw Type")
 p1
+#KK: I probably wouldn't go with this plot because it's quite hard to read. I would probably go with something like a side by side boxplot where the x axis is the type of saw, the colors are restrained v unrestrained. 
 
 #boxplot
 #Upper bound: 75th Percentile; Lower bound: 25 Percentile; The "Notch": 95% confidence interval of the Median
@@ -51,6 +65,8 @@ p2 <- ggplot(subdata, aes(x = subdata$`Restrained/Unrestrained`, subdata$Minimum
   theme(text = element_text(face = "bold",color = "steelblue"))
 p2
 
+#KK: This one looks good to me. Be sure to know how to explain this plot
+
 #Violin
 #Violin plot shows the entire distribution of the data.
 p3 <- ggplot(subdata,aes(x = subdata$`Restrained/Unrestrained`, subdata$Minimum))+
@@ -58,19 +74,28 @@ p3 <- ggplot(subdata,aes(x = subdata$`Restrained/Unrestrained`, subdata$Minimum)
   labs(title = "Minimum Width \nRestrained vs Unrestrained\nViolin", x="Hand Saw", y="Minimum Width")+
   theme(text = element_text(face = "bold",color = "steelblue"))
 p3
+
+#KK: Looks good. Same comment as for p2
+
+#KK: I think we might also want to look at comparing the restrained/unrestrained with bone type too, so we can see if there are any interaction effects. 
 ```
 
 ## readin
 
 
 ```{r data}
+#KK: by "restrinted", do you mean restrained?
+
 ## Mechenical VS Hand(restrinted)
 
 attach(mydata)
 # filter out the restrinted part
 data_restrinted <- split(mydata,mydata$`Restrained/Unrestrained`)[[1]]
 #filter with hand or mechenical saw
+
+#KK: Again, I would try to make it easier for yourself and use the sawInfo data set find this list for you
 hand_restrinted <- filter(data_restrinted,str_detect(Saw, "A|B|C|D|E|F|G|J|K|L|M"))
+#KK: it's "mechanical", not "mechenical"
 mechenical_restrinted <- filter(data_restrinted,str_detect(Saw, "H|I|O|N|P"))
 
 hand_restrinted$HorM = "hand"
@@ -87,12 +112,16 @@ p4<-ggplot(data_restrinted,aes(x=HorM, y=Minimum))+
   theme(text = element_text(face = "bold",color = "steelblue"))
 p4
 
+#KK: same comment as before 
+
 # boxplot 
 p5<-ggplot(data_restrinted,aes(x=HorM, y=Minimum))+
   geom_boxplot(aes(fill= `HorM`),notch = TRUE)+
   labs(title = "Minimum Width \nMechenical VS Hand(restrinted)\nboxplot",x="Saw Type", y="Minimum Width")+
   theme(text = element_text(face = "bold",color = "steelblue"))
 p5
+
+#KK: I believe that the outliers are all coming from the chain saw. Same comments as above
 
 # Violin
 p6<-ggplot(data_restrinted,aes(x=HorM, y=Minimum))+
@@ -101,6 +130,11 @@ p6<-ggplot(data_restrinted,aes(x=HorM, y=Minimum))+
   theme(text = element_text(face = "bold",color = "steelblue"))
   
 p6
+
+#KK: Same comments as above. 
+
+
+#KK: some other plots that will be good. Combining restrained v unrestrained and comparing the min widths for each type of saw. making a few plots to compare the cuts on the bone type as well. 
 ```
 
 
