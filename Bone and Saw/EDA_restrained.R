@@ -16,13 +16,6 @@ subdata <- filter(mydata,str_detect(Saw, "A|B|C|D|E|F|G|J|K|L|M"))
 
 ###EDA
 # ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
-#Unrestrained vs restrained (hand)
-datasplit <- split(mydata,mydata$`Restrained/Unrestrained`)
-x1 <- datasplit[[1]]
-x2 <- datasplit[[2]]
-vioplot(x1$Minimum,x2$Minimum,names = "Restrained", "Unrestrained", col = "gold")
-title("Violin Plots of Restrained and Unrestrained")
-
 #scatter plot
 p1 <- ggplot(subdata,aes(x = subdata$`Restrained/Unrestrained`,y = Minimum)) +geom_point(aes(color = subdata$`Saw`))+
   labs(title = "Minimum Width \nRestrained vs Unrestrained\nscatter plot",x="Hand Saw", y="Minimum Width") +
