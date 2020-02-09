@@ -1,0 +1,106 @@
+---
+title: "bone"
+author: "xiaofei_wu"
+date: "2/8/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+```{r}
+
+###read the raw data
+# ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+pacman::p_load(readxl,vioplot,ggplot2,tidyverse,stringr)
+
+
+###data wrangling
+# ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+mydata <- read_excel("Saw Data Collection.xlsx",sheet = 2,col_names = TRUE,skip = 1)
+mydata <- mydata[-13]
+mydata <- mydata[-13]
+
+mydata <- dplyr::mutate(mydata,Saw = substr(`Saw ID`, 1,1))
+#filter with hand saw
+subdata <- filter(mydata,str_detect(Saw, "A|B|C|D|E|F|G|J|K|L|M"))
+
+
+###EDA
+# ••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+#Unrestrained vs restrained (hand)
+datasplit <- split(mydata,mydata$`Restrained/Unrestrained`)
+x1 <- datasplit[[1]]
+x2 <- datasplit[[2]]
+
+
+#scatter plot
+p1 <- ggplot(subdata,aes(x = subdata$`Restrained/Unrestrained`,y = Minimum)) +geom_point(aes(color = subdata$`Saw`))+
+  labs(title = "Minimum Width \nRestrained vs Unrestrained\nscatter plot",x="Hand Saw", y="Minimum Width") +
+  theme(text = element_text(face = "bold",color = "steelblue"))+
+  scale_color_discrete(name = "Hand Saw Type")
+p1
+
+#boxplot
+#Upper bound: 75th Percentile; Lower bound: 25 Percentile; The "Notch": 95% confidence interval of the Median
+p2 <- ggplot(subdata, aes(x = subdata$`Restrained/Unrestrained`, subdata$Minimum))+
+  geom_boxplot(aes(fill =`Restrained/Unrestrained`),notch = T)+
+  labs(title = "Minimum Width \nRestrained vs Unrestrained\nboxplot", x="Hand Saw", y="Minimum Width")+
+  theme(text = element_text(face = "bold",color = "steelblue"))
+p2
+
+#Violin
+#Violin plot shows the entire distribution of the data.
+p3 <- ggplot(subdata,aes(x = subdata$`Restrained/Unrestrained`, subdata$Minimum))+
+  geom_violin(aes(fill =`Restrained/Unrestrained`))+
+  labs(title = "Minimum Width \nRestrained vs Unrestrained\nViolin", x="Hand Saw", y="Minimum Width")+
+  theme(text = element_text(face = "bold",color = "steelblue"))
+p3
+```
+
+## readin
+
+
+```{r data}
+## Mechenical VS Hand(restrinted)
+
+attach(mydata)
+# filter out the restrinted part
+data_restrinted <- split(mydata,mydata$`Restrained/Unrestrained`)[[1]]
+#filter with hand or mechenical saw
+hand_restrinted <- filter(data_restrinted,str_detect(Saw, "A|B|C|D|E|F|G|J|K|L|M"))
+mechenical_restrinted <- filter(data_restrinted,str_detect(Saw, "H|I|O|N|P"))
+
+hand_restrinted$HorM = "hand"
+mechenical_restrinted$HorM = "mechenical"
+# combine both methods as restrinted data
+data_restrinted = rbind(hand_restrinted,mechenical_restrinted)[,-13]
+attach(data_restrinted)
+
+
+# scatter plot
+p4<-ggplot(data_restrinted,aes(x=HorM, y=Minimum))+
+  geom_point(aes(color = data_restrinted$`Saw ID`))+
+  labs(title = "Minimum Width \nMechenical VS Hand(restrinted)\nscatter plot",x="Saw", y="Minimum Width")+
+  theme(text = element_text(face = "bold",color = "steelblue"))
+p4
+
+# boxplot 
+p5<-ggplot(data_restrinted,aes(x=HorM, y=Minimum))+
+  geom_boxplot(aes(fill= `HorM`),notch = TRUE)+
+  labs(title = "Minimum Width \nMechenical VS Hand(restrinted)\nboxplot",x="Saw Type", y="Minimum Width")+
+  theme(text = element_text(face = "bold",color = "steelblue"))
+p5
+
+# Violin
+p6<-ggplot(data_restrinted,aes(x=HorM, y=Minimum))+
+  geom_violin(aes(fill= `HorM`))+
+  labs(title = "Minimum Width \nMechenical VS Hand(restrinted)\nViolin",x="Saw Type", y="Minimum Width")+
+  theme(text = element_text(face = "bold",color = "steelblue"))
+  
+p6
+```
+
+
